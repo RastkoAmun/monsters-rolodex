@@ -1,50 +1,41 @@
-import { Component } from 'react'
+import { useEffect, useState } from 'react';
 import CardList from './components/card-list/CardList';
 import SearchBar from './components/search-bar/SearchBar';
 import './App.css'
 
-class App extends Component{
-  constructor(){
-    super();
-    this.state = {
-      monsters: [],
-      searchField: ''
-    }
-  }
+const App = () => {
+  const [ monsters, setMonsters ] = useState([]);
+  const [ filteredMonsters, setFilteredMonsters ] = useState(monsters);
+  const [ searchField, setSearchField ] = useState('');
 
-  handleEvent = (event) => {
-    const searchField = event.target.value.toLowerCase()
-    this.setState(() => {
-      return { searchField }
-    })
-  }
-
-  componentDidMount(){
+  useEffect(() => {
     fetch('https://jsonplaceholder.typicode.com/users')
       .then(response => response.json())
-      .then(users => this.setState(() => {
-        return {monsters: users}
-      }))
-  }
+      .then(users => setMonsters(users))
+  }, []);
 
-  render(){
-    const { monsters, searchField } = this.state;
-    const { handleEvent } = this
-
-    const filteredMonsters = monsters.filter(monster => {
+  useEffect(() => {
+    const newFilteredMonsters = monsters.filter(monster => {
       return monster.name.toLowerCase().includes(searchField)
     })
+    setFilteredMonsters(newFilteredMonsters)
+  }, [monsters, searchField])
 
-    return (
-      <div className="App">
-        <h1 className='app-title'> Monster Rolodex </h1>
-        <SearchBar handler={handleEvent} 
-          placeholder='search monsters' 
-          className='search-bar'/>
-        <CardList monsters={filteredMonsters}/>
-      </div>
-    );
-  }  
+  const handleEvent = (event) => {
+    const searchFieldString = event.target.value.toLowerCase()
+    setSearchField(searchFieldString);
+  }
+
+  return(
+    <div className="App">
+      <h1 className='app-title'> Monster Rolodex </h1>
+      <SearchBar handler={handleEvent} 
+        placeholder='search monsters' 
+        className='search-bar'/>
+      <CardList monsters={filteredMonsters}/>
+    </div>
+  )
 }
+
 
 export default App;
